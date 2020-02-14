@@ -1,0 +1,2 @@
+The code solves a multiple producer - multiple consumer problem, that uses
+a communication channel.

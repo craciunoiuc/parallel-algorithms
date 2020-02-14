@@ -1,0 +1,83 @@
+==================================Tema 3 - APD=================================
+Nume: Craciunoiu Cezar
+Grupa: 334CA
+
+Partea I - descrierea temei
+
+Programul isi propune sa aplice setul de filtre cerut intr-un mod distribuit.
+Pentru a se realiza acest lucru codul de C++ a fost impartit in 3 fisiere, care
+vor fi luate fiecare in parte:
+
+1. "transforms.h"
+Aici sunt tinute kernel-urile din enunt cat si aplicarea produsului de
+convolutie pentru matrici de 3 pe 3.
+
+2. "photo.h"
+Aceasta contine, in primul rand structura de pixel, care este de forma a 3
+float-uri R, G si B. Daca imaginea este Black&White toate culorile au aceeasi
+valoare. Pentru color, acestea sunt diferite. Fiecare element din imagine este
+de tip structura Pixel.
+Clasa Photo este mai mult un container. Aceasta, cand se creeaza obiectul,
+formateaza datele si metadatele intr-un mod usor accesibil. Majoritatea
+functiilor definite sunt pentru copierea informatiei (partial sau total). Aici
+se mai afla si functia "writePhoto" in care se primeste un loc in care sa se
+scrie, iar toata informatia este scrisa in acel fisier in acelasi mod cum a
+fost citita.
+
+3. "tema3.cpp"
+Aici este punctul de pornire al temei. In functia main, mai intai se
+initializeaza mediul distribuit si apoi se parse-aza argumentele de la intrare.
+Procesul master citeste din fisierul de la intrare si trimite informatia catre
+toate celelalte, iar, apoi, toate procesele se apuca sa construiasca imaginea
+in memorie.
+Se trece la editarea efectiva a imaginilor. Se stabilesc niste limite si apoi,
+pentru fiecare filtru, fiecare proces aplica acel filtru prin metoda data in
+enunt asupra imaginii lui. Dupa ce au terminat, procesele "copil" trimit ce au
+calculat procesului "parinte" adica cel cu id-ul 0. Acesta asteapta si primeste
+pe rand de la fiecare liniile din imagine.
+Dupa ce procesul master a reconstruit imaginea trecuta prin primul filtru,
+acesta face broadcast cu imaginea noua si se reia procesul daca mai sunt
+filtre prin care sa se treaca.
+La final se scrie imaginea pe disk si programul se termina.
+
+Partea II - Scalabilitate & Corectitudine
+
+Corectitudinea a fost verificata prin diff intre imaginea rezultata si cea
+data in folderul ref (diff a dat egalitate de fiecare data).
+
+Pentru verificarea scalabilitatii s-a rulat pe 4 procesoare de 4 ori fiecare:
+(precizare: pentru 4 procese, adica maxim, valoarea a variat mai mult, deoarece
+procesorul este tinut la 100%, iar sistemul are nevoie si el cateodata de
+putere de procesare asa ca pune pauza programului.)
+- testul cu imaginea alb-negru rorschach prin bssembssem
+- testul cu imaginea color landscape prin bssembssem
+
+Rorschach.pgm - bssembssem
+- core = 1 -> time = ~43.26s (43.45 43.33 43.37 42.92)
+- core = 2 -> time = ~28.04s (28.03 28.04 28.07 28.03)
+- core = 3 -> time = ~25.69s (25.18 25.85 26.01 25.73)
+- core = 4 -> time = ~23.44s (22.68 22.446 24.44 24.2)
+
+landscape.pnm - bssembssem
+- core = 1 -> time = ~68.31s (69.16 68.53 67.80 67.75)
+- core = 2 -> time = ~42.31s (42.69 41.96 42.44 42.15) 
+- core = 3 -> time = ~36.01s (35.90 35.89 36.24 36.03) 
+- core = 4 -> time = ~33.33s (33.30 33.02 33.52 33.48)
+
+Concluzii:
+
+Se poate observa ca programul merge aproape de 2 ori mai repede de la 1 la 2
+procese (nu si in cazul imaginii color, acolo overhead-ul de trimitere al
+imaginii este probabil mare). Cu cat se continua cresterea numarului de procese
+scade si diferenta de timp. Din rezultatele de mai sus rezulta ca programul
+scaleaza foarte bine de la 1 la 4 core-uri, dar probabil destul de putin daca
+s-ar trece peste.
+
+Informatii procesor pe care s-au rulat testele:
+CPU(s):                          4
+Thread(s) per core:              1
+Model name:                      Intel(R) Pentium(R) CPU N4200 @ 1.10GHz
+CPU MHz:                         1288.980
+CPU max MHz:                     2500,0000
+CPU min MHz:                     800,0000
+
